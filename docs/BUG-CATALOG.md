@@ -75,6 +75,35 @@ how it was proven, and what guards it now. When a new one bites, add an entry
 - **Fix pattern:** `npx expo run:ios` (with `LANG=en_US.UTF-8` for
   CocoaPods) whenever native config changes.
 
+## 6. Duplicate SVG def ids collide across router-mounted screens (web)
+
+- **Symptom:** an SVG gradient/mask fill paints black (or vanishes) on web,
+  but ONLY after navigating — a direct load of the same route renders
+  perfectly; iOS is always fine. In mantra: navigating Welcome → Begin turned
+  the aurora background flat black, and looping Home → Begin again killed the
+  affirmation text's gradient fill (outline-only text).
+- **Root cause:** SVG def ids are document-global on web, and expo-router
+  keeps previous screens mounted in the DOM. A second mounted screen defining
+  the same id makes `url(#...)` resolve to the FIRST matching element in
+  document order — inside the hidden screen — which Chrome treats as an
+  invalid paint. iOS (react-native-svg) scopes ids per `Svg` tree, so the bug
+  is structurally invisible there. It's navigation-dependent, so "load the
+  page and look" verification passes.
+- **Proven:** mantra, 2026-07-09
+  ([PR #5](https://github.com/JeffLtz/mantra/pull/5)). Playwright (headless
+  system Chrome) driving the real Welcome → Begin flow reproduced it; a DOM
+  query showed every gradient id duplicated (`blob-magenta`, `blob-blue`,
+  `blob-cyan`, `vignette` — one set per mounted screen). Direct load of
+  `/breathe` = one set, rendered fine. After the fix, same flow = zero
+  duplicates, aurora + fill render; iOS simulator unchanged.
+- **Guard:** [`no-static-svg-id`](rules/no-static-svg-id.md) — flags static
+  ids (string literal, expression-free template, or module-scope string
+  const) on react-native-svg def components.
+- **Fix pattern:** derive every def id from a sanitized `useId()` per
+  instance (React ids contain characters invalid in `url(#...)`):
+  `const uid = useId().replace(/[^a-zA-Z0-9]/g, "");` then
+  `` id={`vignette-${uid}`} `` and `` fill={`url(#${vignetteId})`} ``.
+
 ---
 
 ## Adding an entry

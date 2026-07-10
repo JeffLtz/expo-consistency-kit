@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-07-09
+
+- `no-static-svg-id` — static react-native-svg def ids (`id="vignette"`)
+  collide across expo-router-mounted screens on web, where ids are
+  document-global; `url(#...)` then resolves into a hidden screen and Chrome
+  paints the gradient/mask fill black. Navigation-dependent, so a direct load
+  looks fine and iOS (per-Svg-tree id scoping) never breaks. Extracted from
+  mantra PR #5, where navigating Welcome → Begin blacked out the aurora and a
+  Playwright A/B showed every gradient id duplicated once per mounted screen.
+  Fix: derive ids from a sanitized `useId()` per instance.
+
 ## 0.1.0 — 2026-07-09
 
 Initial release, extracted from whiplash-expo after a week in which two

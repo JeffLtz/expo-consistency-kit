@@ -15,7 +15,7 @@ the founding principle is one sentence:
 
 | Piece | What it guards |
 |---|---|
-| [3 ESLint rules](#eslint-rules) | Bug classes that are invisible to JS-level tests |
+| [4 ESLint rules](#eslint-rules) | Bug classes that are invisible to JS-level tests |
 | [jest two-platform template](templates/jest-two-platform/) | Every test runs under both `Platform.OS === "ios"` and react-native-web |
 | [CI workflow template](templates/ci.yml) | lint → typecheck → two-platform tests on every PR |
 | [Verification playbook](docs/PLAYBOOK.md) | Runnable recipes for eyeballing both platforms before merging |
@@ -100,6 +100,7 @@ introduces on the platform you weren't looking at.
 | [no-animated-view-wrapping-pressable](docs/rules/no-animated-view-wrapping-pressable.md) | reanimated `Animated.View` (useAnimatedStyle) wrapping a `Pressable` makes nested `Text` render **invisible on iOS New Architecture**. Invisible to JS-level tests — a static check is the only automated guard. |
 | [no-classname-on-animated-component](docs/rules/no-classname-on-animated-component.md) | nativewind `className` on reanimated components is applied on iOS but **silently dropped on web** (and `cssInterop` registration breaks native). Explicit style objects are the only cross-platform behavior. |
 | [no-native-only-import](docs/rules/no-native-only-import.md) | A module-scope `require()` of a native-only module **hard-crashes Expo Go** at load time and doesn't exist on web. Enforces the guarded-wrapper pattern. |
+| [no-static-svg-id](docs/rules/no-static-svg-id.md) | A static react-native-svg def `id` collides across router-mounted screens on web (ids are document-global), so `url(#...)` resolves into a hidden screen and Chrome **paints the fill black** — only after navigation, so a direct load looks fine. iOS scopes ids per Svg tree. Derive ids from a sanitized `useId()`. |
 
 Rules are deliberately per-file tripwires, not proofs — they favor simplicity
 and catch the shapes that actually shipped. Escape hatch: an

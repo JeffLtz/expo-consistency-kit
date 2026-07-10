@@ -25,6 +25,15 @@ changes.
   (lazy require + Platform check + try/catch + no-op fallback).
 - Size react-native-svg elements numerically, not with percentage strings —
   percentages paint past bounds on iOS. Measure with onLayout if needed.
+- Never give react-native-svg def elements (LinearGradient, RadialGradient,
+  Mask, Pattern, ClipPath, Filter, Marker) a static `id`. Web ids are
+  document-global and expo-router keeps previous screens mounted, so a
+  duplicated id makes `url(#...)` resolve into a hidden screen and the fill
+  paints black — only after navigation, so a direct load looks fine. iOS
+  scopes ids per Svg tree so the bug is invisible there. Derive every id from
+  a sanitized useId() per instance:
+  `const uid = useId().replace(/[^a-zA-Z0-9]/g, "");` then
+  `` id={`vignette-${uid}`} ``.
 - ESLint enforces these (expo-consistency/* rules). Jest runs every test
   under both jest-expo/ios and jest-expo/web — keep tests passing on both
   projects.

@@ -3,5 +3,6 @@
 require("./rules/no-animated-view-wrapping-pressable.test");
 require("./rules/no-classname-on-animated-component.test");
 require("./rules/no-native-only-import.test");
+require("./rules/no-static-svg-id.test");
 
 console.log("\nall rule tests passed");
