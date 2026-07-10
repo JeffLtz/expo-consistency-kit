@@ -1,0 +1,22 @@
+# Copy to .github/workflows/ci.yml in the consuming app.
+# Requires package.json scripts: "test": "jest", plus tsconfig + eslint set up.
+# jest already covers both platforms in one invocation (multi-project config),
+# so a single job is faster than a matrix — npm ci dominates the cost.
+name: CI
+
+on:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx eslint . --max-warnings 0
+      - run: npx tsc --noEmit
+      - run: npx jest --ci
